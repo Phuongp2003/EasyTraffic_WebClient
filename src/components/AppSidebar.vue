@@ -49,7 +49,7 @@ const menuItems = [
   {
     label: 'Quản lý biên bản phạt',
     icon: 'i-lucide-file-text',
-    to: '/minutes',
+    to: '/reports',
   },
   {
     label: 'Quản lý người dùng',
