@@ -42,13 +42,14 @@
 <script setup lang="ts">
 import { onMounted, h, resolveComponent, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useArticles, type Article } from '@/composables/useArticles'
+import { useArticles } from '@/composables/useArticles'
 import type { TableColumn } from '@nuxt/ui'
 import type { Row, Column } from '@tanstack/vue-table'
 import LazyConfirmDialog from '@/components/ConfirmDialog.vue'
+import type { Article } from '@/types'
 const props = defineProps<{
   title: string
-  tags: string[]
+  type: string
   categoryPath: string
 }>()
 
@@ -92,11 +93,6 @@ function getRowItems(row: Row<Article>) {
       },
     },
     {
-      label: 'Sửa thành phần liên kết',
-      icon: 'i-heroicons-pencil',
-      onSelect: () => navigateToRelatedEntity(row.original),
-    },
-    {
       type: 'separator',
     },
     {
@@ -132,24 +128,17 @@ const columns: TableColumn<Article>[] = [
     cell: ({ row }) => row.getValue('viewCount'),
   },
   {
-    accessorKey: 'relatedInfo',
-    header: ({ column }) => getHeader(column, 'Thông tin liên kết'),
+    accessorKey: 'status',
+    header: ({ column }) => getHeader(column, 'Trạng thái'),
     cell: ({ row }) => {
-      const article = row.original
-      if (article.Advisor) {
-        return `Leader: ${article.Advisor.fullName}`
-      } else if (article.School) {
-        return `Trường: ${article.School.name}`
-      } else if (article.VisaType) {
-        return `Visa: ${article.VisaType.name}`
-      }
-      return 'Chưa có liên kết'
-    },
-  },
-  {
-    accessorKey: 'subTags',
-    header: ({ column }) => getHeader(column, 'Thẻ'),
-    cell: ({ row }) => row.original.tags.subTags?.join(', '),
+      const status = row.getValue('status');
+      const statusMap = {
+        'READY': 'Công khai',
+        'HIDING': 'Ẩn',
+        'DESIGNING': 'Nháp'
+      };
+      return statusMap[status as keyof typeof statusMap] || status;
+    }
   },
   {
     id: 'actions',
@@ -249,7 +238,7 @@ const confirmDelete = async (article: Article) => {
           description: 'Bài viết đã được xoá thành công',
         })
         // Refresh with current pagination
-        fetchArticles(props.tags, currentPage.value, itemsPerPage.value)
+        fetchArticles(props.type, currentPage.value, itemsPerPage.value)
         modal.close()
       } catch {
         toast.add({
@@ -265,29 +254,19 @@ const confirmDelete = async (article: Article) => {
   })
 }
 
-const navigateToRelatedEntity = (article: Article) => {
-  if (article.Advisor) {
-    router.push(`/leaders/edit/${article.Advisor.id}`)
-  } else if (article.School) {
-    router.push(`/school/edit/${article.School.id}`)
-  } else if (article.VisaType) {
-    router.push(`/visa/edit/${article.VisaType.id}`)
-  }
-}
-
 const onPageChange = (page: number) => {
   if (page !== currentPage.value) {
     goToPage(page)
-    fetchArticles(props.tags, page, itemsPerPage.value)
+    fetchArticles(props.type, page, itemsPerPage.value)
   }
 }
 
 // Watch for sorting changes to refetch with current pagination
 watch(sorting, () => {
-  fetchArticles(props.tags, currentPage.value, itemsPerPage.value)
+  fetchArticles(props.type, currentPage.value, itemsPerPage.value)
 })
 
 onMounted(() => {
-  fetchArticles(props.tags, 1, itemsPerPage.value)
+  fetchArticles(props.type, 1, itemsPerPage.value)
 })
 </script>

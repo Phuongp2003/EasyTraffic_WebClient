@@ -33,16 +33,15 @@ const router = createRouter({
           path: 'articles',
           children: [
             {
-              path: 'tags',
-              name: 'tags',
-              component: () => import('../views/TagsView.vue'),
+              path: 'news',
+              component: () => import('../views/articles/NewsView.vue'),
               meta: {
                 requiresAuth: true,
               },
             },
             {
-              path: 'news-events',
-              component: () => import('../views/articles/NewsEventsView.vue'),
+              path: 'events',
+              component: () => import('../views/articles/EventsView.vue'),
               meta: {
                 requiresAuth: true,
               },
@@ -76,7 +75,7 @@ const router = createRouter({
           children: [
             {
               path: '',
-              component: () => import('../views/TeamListView.vue'), // Fixed import path
+              component: () => import('../views/TeamListView.vue'),
               meta: {
                 requiresAuth: true,
               },

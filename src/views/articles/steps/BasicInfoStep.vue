@@ -1,11 +1,11 @@
 <template>
   <div class="space-y-6">
-    <UFormField label="Tags">
-      <TagCascader
-        v-if="tags.length > 0"
-        v-model="modelValue.lowestTags"
-        :options="tags"
-        @update:model-value="handleTagChange"
+    <UFormField label="Type" required>
+      <USelect
+        v-model="modelValue.type"
+        :items="typeOptions"
+        placeholder="Select article type"
+        @update:model-value="updateType"
       />
     </UFormField>
 
@@ -53,23 +53,24 @@ defineOptions({
   name: 'BasicInfoStep',
 })
 
-import { onMounted } from 'vue'
+import {  ref, watch } from 'vue'
 import type { ArticlePayload } from '@/composables/useArticles'
-import { useTags } from '@/composables/useTags'
-import TagCascader from '@/components/TagCascader.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 import UFileUpload from '@/components/UFileUpload.vue'
 
 const props = defineProps<{
   modelValue: Partial<ArticlePayload>
-  coverImage: string
-  backgroundImage: string
 }>()
 
 const coverImage = ref(props.modelValue.coverImage)
 const showCoverImageInput = ref(false)
 const backgroundImage = ref(props.modelValue.backgroundImage || '')
 const showThumbnailImageInput = ref(false)
+
+const typeOptions = [
+  { label: 'Tin tức', value: 'News' },
+  { label: 'Sự kiện', value: 'Events' }
+]
 
 watch(coverImage, (newValue) => {
   emit('update:modelValue', { ...props.modelValue, coverImage: newValue })
@@ -78,16 +79,12 @@ watch(coverImage, (newValue) => {
 watch(backgroundImage, (newValue) => {
   emit('update:modelValue', { ...props.modelValue, backgroundImage: newValue })
 })
+
 const emit = defineEmits<{
   (e: 'update:modelValue', value: Partial<ArticlePayload>): void
 }>()
 
-const { tags, fetchTags } = useTags()
 const { uploadFile } = useFileUpload()
-
-onMounted(async () => {
-  await fetchTags()
-})
 
 const toast = useToast()
 
@@ -99,11 +96,11 @@ function handleUploadError(message: string) {
   })
 }
 
-function handleTagChange(value: string) {
-  const newValue = { ...props.modelValue }
-  newValue.lowestTags = value
-  newValue.type = value
-  emit('update:modelValue', newValue)
+function updateType(value: string) {
+  emit('update:modelValue', {
+    ...props.modelValue,
+    type: value,
+  })
 }
 
 async function uploadImages() {
@@ -149,4 +146,6 @@ async function uploadImages() {
 defineExpose({
   uploadImages,
 })
+
+
 </script>

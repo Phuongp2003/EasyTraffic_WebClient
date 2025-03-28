@@ -2,12 +2,6 @@ import { ref } from 'vue'
 import { apiRequest } from '../utils/apiUtils'
 import type { Article } from '@/types'
 
-export interface ArticleTag {
-  tag: {
-    id: string
-  }
-}
-
 export interface ArticlePayload {
   title: string
   description: string
@@ -17,9 +11,6 @@ export interface ArticlePayload {
   slug: string
   coverImage?: File | string
   backgroundImage?: File | string
-  lowestTags: string
-  ArticleType?: string
-  tags?: string[]
 }
 
 export function useArticles() {
@@ -31,64 +22,35 @@ export function useArticles() {
   const totalItems = ref(0)
   const itemsPerPage = ref(10)
 
-  const fetchArticles = async (tags?: string[], page = 1, limit = 10) => {
+  const fetchArticles = async (type: string, page = 1, limit = 10) => {
     loading.value = true
     error.value = null
     currentPage.value = page
     itemsPerPage.value = limit
 
     try {
-      let allArticles: Article[] = []
-      if (tags?.length) {
-        for (const tag of tags) {
-          const response = await apiRequest<{
-            items: Article[]
-            currentPage: number
-            totalPages: number
-          }>({
-            url: '/articles',
-            method: 'GET',
-            params: {
-              tag: tag,
-              page,
-              limit,
-            },
-          })
-          console.log(response)
-          // Access items directly from response.data.data
-          allArticles = [...allArticles, ...response.data.items]
+      const response = await apiRequest<{
+        items: Article[]
+        currentPage: number
+        totalPages: number
+        totalItems: number
+      }>({
+        url: '/articles',
+        method: 'GET',
+        params: {
+          type,
+          page,
+          limit,
+        },
+      })
 
-          // Get pagination data from response
-          totalItems.value = 0
-          totalPages.value = response.data.totalPages
-          currentPage.value = response.data.currentPage
-        }
-        // Remove duplicates
-        const uniqueArticles = new Map(allArticles.map((article) => [article.id, article]))
-        allArticles = Array.from(uniqueArticles.values())
-      } else {
-        const response = await apiRequest<{
-          items: Article[]
-          currentPage: number
-          totalPages: number
-        }>({
-          url: '/articles',
-          method: 'GET',
-          params: {
-            page,
-            limit,
-          },
-        })
+      // Access items directly from response.data
+      articles.value = response.data.items
 
-        // Access items directly from response.data.data
-        allArticles = response.data.items
-
-        // Get pagination data from response
-        totalPages.value = response.data.totalPages
-        totalItems.value = 0
-        currentPage.value = response.data.currentPage
-      }
-      articles.value = allArticles
+      // Get pagination data from response
+      totalPages.value = response.data.totalPages || 1
+      totalItems.value = response.data.totalItems || 0
+      currentPage.value = response.data.currentPage || 1
     } catch (err) {
       error.value = 'Tải danh sách bài viết thất bại!'
       console.error(err)
@@ -174,39 +136,6 @@ export function useArticles() {
     }
   }
 
-  const manageRelatedEntity = async (
-    articleId: string,
-    entityType: 'Advisor' | 'School' | 'VisaType',
-    entityData: unknown,
-  ) => {
-    try {
-      const response = await apiRequest({
-        url: `/api/${entityType.toLowerCase()}s/${articleId}`,
-        method: 'PUT',
-        data: entityData,
-      })
-      return response.data
-    } catch (err) {
-      console.error(`Quản lý ${entityType.toLowerCase()} thất bại`, err)
-      throw new Error(`Quản lý ${entityType.toLowerCase()} thất bại`)
-    }
-  }
-
-  const unlinkRelatedEntity = async (
-    articleId: string,
-    entityType: 'Advisor' | 'School' | 'VisaType',
-  ) => {
-    try {
-      await apiRequest({
-        url: `/api/${entityType.toLowerCase()}s/${articleId}`,
-        method: 'DELETE',
-      })
-    } catch (err) {
-      console.error(`Gỡ liên kết ${entityType.toLowerCase()} thất bại`, err)
-      throw new Error(`Gỡ liên kết ${entityType.toLowerCase()} thất bại`)
-    }
-  }
-
   function generateSlug(title: string): string {
     const randomString = Math.random()
       .toString(36)
@@ -238,7 +167,5 @@ export function useArticles() {
     updateArticle,
     deleteArticle,
     generateSlug,
-    manageRelatedEntity,
-    unlinkRelatedEntity,
   }
 }

@@ -6,7 +6,10 @@
           <UCard>
             <template #header>
               <div class="flex justify-between items-center">
-                <h1 class="text-xl font-bold">{{ isEdit ? 'Sửa bài viết' : 'Tạo bài viết' }}</h1>
+                <h1 class="text-xl font-bold">
+                  {{ isEdit ? 'Sửa bài viết' : 'Tạo bài viết' }}
+                  <span class="text-gray-500">({{ articleTypeLabel }})</span>
+                </h1>
               </div>
             </template>
             <UStepper
@@ -18,7 +21,7 @@
             >
               <template v-for="step in steps" :key="step.slot" #[step.slot]>
                 <KeepAlive
-                  :include="['BasicInfoStep', 'ContentStep', 'TranslationStep', 'FinalStep']"
+                  :include="['BasicInfoStep', 'ContentStep', 'FinalStep']"
                 >
                   <component
                     color="neutral"
@@ -76,26 +79,43 @@ import BasicInfoStep from './steps/BasicInfoStep.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 import ContentStep from './steps/ContentStep.vue'
 import FinalStep from './steps/FinalStep.vue'
-import RelateEntityModal from '@/components/RelateEntityModal.vue'
-import type { Article } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
 const { createArticle, updateArticle, generateSlug, getArticleBySlug } = useArticles()
 const { uploadFile } = useFileUpload()
 const isEdit = computed(() => route.params.slug !== undefined)
+
+const toast = useToast();
+
+// Determine article type based on route
+const articleType = computed(() => {
+  const category = route.params.category as string
+  if (category === 'news') return 'News'
+  if (category === 'events') return 'Events'
+  return ''
+})
+
+// Human-readable label for the article type
+const articleTypeLabel = computed(() => {
+  if (articleType.value === 'News') return 'Tin tức'
+  if (articleType.value === 'Events') return 'Sự kiện'
+  return ''
+})
+
 let initD
 if (isEdit.value) {
   initD = await getArticleBySlug(route.params.slug as string)
 }
+
 const state = reactive({
   currentStep: 0,
   formData: {
     title: initD?.title || '',
     description: initD?.description || '',
     content: initD?.content || '',
-    lowestTags: initD?.tagId || '',
-    type: initD?.tagId || '',
+    // Always use the type determined by the route
+    type: articleType.value,
     status: initD?.status || 'DESIGNING',
     coverImage: initD?.coverImage || '',
     backgroundImage: initD?.backgroundImage || '',
@@ -122,14 +142,14 @@ const stepper = ref()
 const steps = [
   {
     slot: 'basic-info',
-    title: 'Thông tin không ngôn ngữ',
-    description: 'Thiết lập loại bài viết, hình ảnh thumbnail và ảnh nền',
+    title: 'Thông tin cơ bản',
+    description: 'Thiết lập hình ảnh thumbnail và ảnh nền',
     icon: 'i-lucide-file-plus',
   },
   {
     slot: 'content',
     title: 'Nội dung',
-    description: 'Thiết lập nội dung tiếng Việt cho bài viết',
+    description: 'Thiết lập nội dung bài viết',
     icon: 'i-lucide-pencil',
   },
   {
@@ -152,6 +172,7 @@ function getStepComponent(slot: string) {
 }
 
 const handleSubmit = async () => {
+  // Process image uploads
   if (state.formData.coverImage && state.formData.coverImage instanceof File) {
     state.formData.coverImage = (await uploadFile(state.formData.coverImage)).secure_url
   }
@@ -159,47 +180,41 @@ const handleSubmit = async () => {
   if (state.formData.backgroundImage && state.formData.backgroundImage instanceof File) {
     state.formData.backgroundImage = (await uploadFile(state.formData.backgroundImage)).secure_url
   }
+
   try {
-    if (!state.formData.title || !state.formData.lowestTags) {
-      throw new Error('Title and ArticleTag are required to create a slug')
+    if (!state.formData.title) {
+      throw new Error('Tiêu đề là bắt buộc để tạo đường dẫn')
     }
+
+    // Always ensure type field is set correctly from the route
+    state.formData.type = articleType.value
+
+    // Generate slug based on title
     state.formData.slug = generateSlug(state.formData.title)
-    let newArticle
+
+    // Create or update article
     if (isEdit.value) {
-      newArticle = await updateArticle(
+      await updateArticle(
         route.params.slug as string,
         state.formData as ArticlePayload,
       )
     } else {
-      newArticle = await createArticle(state.formData as ArticlePayload)
+      await createArticle(state.formData as ArticlePayload)
     }
-    await checkArticleType(newArticle)
+
+    toast.add({
+      title: 'Thành công',
+      description: isEdit.value ? 'Bài viết đã được cập nhật' : 'Bài viết đã được tạo thành công',
+      color: 'success'
+    })
+
+    router.push(`/articles/${route.params.category}`)
   } catch (error) {
     console.error(error)
-  }
-}
-
-const overlay = useOverlay()
-const checkArticleType = async (article: Article) => {
-  const types = ['Visa', 'Trường học', 'Leader']
-  const typeMapping: Record<string, string> = {
-    Leader: 'leaders', // Assuming '1' is the tag ID for Leader
-    'Trường học': 'school', // Assuming '2' is the tag ID for School
-    Visa: 'visa', // Assuming '3' is the tag ID for Visa
-  }
-  const type = typeMapping[article.tag.name]
-  if (types.includes(article.tag.name)) {
-    const modal = overlay.create(RelateEntityModal)
-    await modal.open({
-      articleType: article.type,
-      async onConfirm() {
-        router.push(`/${type}/create?articleId=${article.id}`)
-        modal.close()
-      },
-      onCancel() {
-        router.push(`/articles/${route.params.category}`)
-        modal.close()
-      },
+    toast.add({
+      title: 'Lỗi',
+      description: String(error) || 'Không thể lưu bài viết',
+      color: 'error'
     })
   }
 }

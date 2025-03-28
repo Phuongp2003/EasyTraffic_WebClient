@@ -33,16 +33,16 @@ const menuItems = [
     to: '/articles',
     children: [
       {
-        label: 'Quản lý thẻ',
-        description: 'Manage article tags',
-        icon: 'i-lucide-file-text',
-        to: '/articles/tags',
+        label: 'Tin tức',
+        description: 'Quản lý tin tức',
+        icon: 'i-lucide-newspaper',
+        to: '/articles/news',
       },
       {
-        label: 'Tin tức và sự kiện',
-        description: 'Manage news and events',
-        icon: 'i-lucide-file-text',
-        to: '/articles/news-events',
+        label: 'Sự kiện',
+        description: 'Quản lý sự kiện',
+        icon: 'i-lucide-calendar',
+        to: '/articles/events',
       }
     ],
   },

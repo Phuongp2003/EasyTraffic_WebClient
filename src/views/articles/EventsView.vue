@@ -1,5 +1,9 @@
 <template>
-  <ArticleListView title="Trường học" :tags="['Trường học']" category-path="schools" />
+  <ArticleListView
+    title="Sự kiện"
+    type="Events"
+    category-path="events"
+  />
 </template>
 
 <script setup lang="ts">

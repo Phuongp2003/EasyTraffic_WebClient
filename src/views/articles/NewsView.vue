@@ -1,5 +1,9 @@
 <template>
-  <ArticleListView title="Bài viết về leader" :tags="['Leader']" category-path="leader" />
+  <ArticleListView
+    title="Tin tức"
+    type="News"
+    category-path="news"
+  />
 </template>
 
 <script setup lang="ts">
