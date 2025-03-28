@@ -52,6 +52,11 @@ const menuItems = [
     to: '/reports',
   },
   {
+    label: 'Quản lý giao dịch',
+    icon: 'i-lucide-file-text',
+    to: '/transactions',
+  },
+  {
     label: 'Quản lý người dùng',
     icon: 'i-lucide-users',
     to: '/users',

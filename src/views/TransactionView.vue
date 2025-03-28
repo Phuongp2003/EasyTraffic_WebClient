@@ -3,7 +3,7 @@
       <UCard>
         <template #header>
           <div class="flex justify-between items-center">
-            <h2 class="text-xl font-semibold">Biên bản phạt</h2>
+            <h2 class="text-xl font-semibold">Quản lý Giao dịch</h2>
           </div>
         </template>
   
@@ -57,28 +57,20 @@
   
   const columns: TableColumn<TeamMember>[] = [
     {
-      accessorKey: 'report',
-      header: ({ column }) => getHeader(column, 'Biên bản phạt'),
-    },
-    {
-      accessorKey: 'location',
-      header: ({ column }) => getHeader(column, 'Địa điểm'),
-      cell: ({ row }) => {
-        const role = rolesStore.roles.find((role) => role.id === row.getValue('roleId'))
-        return role ? role.name : 'Không xác định'
-      },
-    },
-    {
       accessorKey: 'userId',
-      header: ({ column }) => getHeader(column, 'Người vi phạm'),
+      header: ({ column }) => getHeader(column, 'Người đóng tiền'),
       cell: ({ row }) => {
         const role = rolesStore.roles.find((role) => role.id === row.getValue('roleId'))
         return role ? role.name : 'Không xác định'
       },
+    },
+    {
+      accessorKey: 'money',
+      header: ({ column }) => getHeader(column, 'Số tiền'),
     },
     {
       accessorKey: 'updatedAt',
-      header: ({ column }) => getHeader(column, 'Cập Nhật Lúc'),
+      header: ({ column }) => getHeader(column, 'Thời gian giao dịch'),
       cell: ({ row }) => {
         return new Date(row.getValue('updatedAt')).toLocaleString('vi-VN', {
           day: 'numeric',
@@ -88,6 +80,10 @@
           hour12: false,
         })
       },
+    },
+    {
+      accessorKey: 'transactionId',
+      header: ({ column }) => getHeader(column, 'Loại giao dịch'),
     },
     {
         accessorKey: 'status',
