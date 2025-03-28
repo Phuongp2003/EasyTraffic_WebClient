@@ -1,36 +1,6 @@
 import { ref } from 'vue'
 import { apiRequest } from '../utils/apiUtils'
-
-export interface Article {
-  id: string
-  title: string
-  description?: string
-  slug: string
-  content: string
-  tags: {
-    primary: string
-    subTags: string[]
-  }
-  tagId: string
-  createdAt: string
-  coverImage?: File | string
-  backgroundImage?: File | string
-  updatedAt: string
-  status: string
-  translations: ArticleTranslation[]
-  Advisor: Advisor
-  School: School
-  VisaType: VisaType
-  viewCount: number
-}
-
-export interface ArticleTranslation {
-  language: string
-  title: string
-  content: string
-  description?: string
-  createdAt?: string
-}
+import type { Article } from '@/types'
 
 export interface ArticleTag {
   tag: {
@@ -49,32 +19,7 @@ export interface ArticlePayload {
   backgroundImage?: File | string
   lowestTags: string
   ArticleType?: string
-  translations: ArticleTranslation[]
-}
-
-export interface Advisor {
-  id: string
-  title: string
-  fullName: string
-  groupId: string | null
-  createdAt: string
-  articleId: string
-}
-
-export interface School {
-  id: string
-  name: string
-  address: string
-  createdAt: string
-  articleId: string
-}
-
-export interface VisaType {
-  id: string
-  name: string
-  description: string
-  createdAt: string
-  articleId: string
+  tags?: string[]
 }
 
 export function useArticles() {

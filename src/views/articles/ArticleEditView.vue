@@ -75,9 +75,9 @@ import { useArticles, type ArticlePayload } from '@/composables/useArticles'
 import BasicInfoStep from './steps/BasicInfoStep.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 import ContentStep from './steps/ContentStep.vue'
-import TranslationStep from './steps/TranslationStep.vue'
 import FinalStep from './steps/FinalStep.vue'
 import RelateEntityModal from '@/components/RelateEntityModal.vue'
+import type { Article } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
@@ -96,8 +96,7 @@ const state = reactive({
     content: initD?.content || '',
     lowestTags: initD?.tagId || '',
     type: initD?.tagId || '',
-    status: initD?.status || 'ready',
-    translations: initD?.translations || [],
+    status: initD?.status || 'DESIGNING',
     coverImage: initD?.coverImage || '',
     backgroundImage: initD?.backgroundImage || '',
   } as Partial<ArticlePayload>,
@@ -134,12 +133,6 @@ const steps = [
     icon: 'i-lucide-pencil',
   },
   {
-    slot: 'translation',
-    title: 'Dịch thuật',
-    description: 'Các bản dịch cho bài viết',
-    icon: 'i-lucide-languages',
-  },
-  {
     slot: 'final',
     title: 'Kiểm tra lại và trạng thái',
     description: 'Thiết lập trạng thái bài viết, đồng thời kiểm tra lại nội dung',
@@ -151,7 +144,6 @@ const steps = [
 const stepComponents = {
   'basic-info': BasicInfoStep,
   content: ContentStep,
-  translation: TranslationStep,
   final: FinalStep,
 }
 
@@ -188,7 +180,7 @@ const handleSubmit = async () => {
 }
 
 const overlay = useOverlay()
-const checkArticleType = async (article: ArticlePayload) => {
+const checkArticleType = async (article: Article) => {
   const types = ['Visa', 'Trường học', 'Leader']
   const typeMapping: Record<string, string> = {
     Leader: 'leaders', // Assuming '1' is the tag ID for Leader

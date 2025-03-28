@@ -29,17 +29,6 @@ export interface Article {
   slug: string
   tagId: string
   tag: Tag
-  translations: ArticleTranslation[]
-}
-
-export interface ArticleTranslation {
-  id: string
-  articleId: string
-  language: string
-  title: string
-  content: string
-  createdAt: Date
-  article: Article
 }
 
 export interface Tag {
