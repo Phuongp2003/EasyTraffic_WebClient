@@ -8,7 +8,7 @@
       :class="[layoutStore.sidebarOpen ? 'w-64' : 'w-0']"
     >
       <div class="p-4">
-        <h1 class="text-xl font-bold text-gray-800 dark:text-white">NEEC CMS</h1>
+        <h1 class="text-xl font-bold text-gray-800 dark:text-white">EZF CMS</h1>
       </div>
       <UNavigationMenu orientation="vertical" :items="menuItems" class="w-full px-2" />
     </div>

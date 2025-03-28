@@ -8,7 +8,7 @@ export const useColorScheme = () => {
       dark: 'dark',
       light: 'light',
     },
-    storageKey: 'neec-color-scheme',
+    storageKey: 'ezf-color-scheme',
   })
 
   const isDark = computed(() => colorMode.value === 'dark')
